@@ -71,14 +71,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import EditRecordModal from '@/components/EditRecordModal.vue';
 
-const productionRecords = ref([
-  { id: 1, product: 'Widget A', quantity: 100, status: 'Completed', date: '2024-08-01' },
-  { id: 2, product: 'Widget B', quantity: 200, status: 'In Progress', date: '2024-08-02' }
-]);
+const apiUrl = '/api/production'; 
 
+const productionRecords = ref([]);
 const newRecord = ref({
   product: '',
   quantity: 0,
@@ -89,10 +88,45 @@ const newRecord = ref({
 const isModalOpen = ref(false);
 const currentRecord = ref({});
 
-function addProductionRecord() {
-  const id = productionRecords.value.length + 1;
-  productionRecords.value.push({ ...newRecord.value, id });
-  newRecord.value = { product: '', quantity: 0, status: 'In Progress', date: '' };
+async function fetchProductionRecords() {
+  try {
+    const response = await axios.get(apiUrl);
+    productionRecords.value = response.data;
+  } catch (error) {
+    console.error('Error fetching production records:', error);
+  }
+}
+
+async function addProductionRecord() {
+  try {
+    const response = await axios.post(apiUrl, newRecord.value);
+    productionRecords.value.push(response.data[0]); // Assuming the response returns an array
+    newRecord.value = { product: '', quantity: 0, status: 'In Progress', date: '' };
+  } catch (error) {
+    console.error('Error adding production record:', error);
+  }
+}
+
+async function updateRecord(updatedRecord) {
+  try {
+    const response = await axios.put(`${apiUrl}/${updatedRecord.id}`, updatedRecord);
+    const index = productionRecords.value.findIndex(record => record.id === updatedRecord.id);
+    if (index !== -1) {
+      productionRecords.value[index] = response.data[0]; // Assuming the response returns an array
+    }
+    closeEditModal();
+  } catch (error) {
+    console.error('Error updating production record:', error);
+  }
+}
+
+async function deleteRecord(id) {
+  try {
+    await axios.delete(`${apiUrl}/${id}`);
+    productionRecords.value = productionRecords.value.filter(record => record.id !== id);
+  } catch (error) {
+    console.error('Error deleting production record:', error);
+  }
 }
 
 function openEditModal(record) {
@@ -104,16 +138,8 @@ function closeEditModal() {
   isModalOpen.value = false;
 }
 
-function updateRecord(updatedRecord) {
-  const index = productionRecords.value.findIndex(record => record.id === updatedRecord.id);
-  if (index !== -1) {
-    productionRecords.value[index] = updatedRecord;
-  }
-}
-
-function deleteRecord(id) {
-  productionRecords.value = productionRecords.value.filter(record => record.id !== id);
-}
+// Fetch records when component mounts
+onMounted(fetchProductionRecords);
 </script>
 
 <style scoped>
