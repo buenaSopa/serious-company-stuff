@@ -2,7 +2,7 @@
 	"name": "project-root",
 	"version": "1.0.0",
 	"scripts": {
-		"start:client": "cd client && npm start",
+		"start:client": "cd client && npm run dev",
 		"start:server": "cd server && npm start",
 		"start": "npm run start:client & npm run start:server"
 	}
