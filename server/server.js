@@ -1,140 +1,143 @@
-import logger from './logger.js'
-import express from 'express'
-import supabase from './supabase.js'
+import express from 'express';
+import supabase from './supabase.js';
 
-const app = new express()
-const port = 3000
+const app = express();
+const port = 3001;
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.set('json spaces', 2)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set('json spaces', 2);
 
+// Health Check
 app.get('/', (req, res) => {
-  res.json({
-    error: 'This route doesn\'t exist'
-  })
-})
+  res.json({ message: 'API is running' });
+});
 
-app.get('/languages', async (req, res) => {
+// Quality Control Endpoints
+
+// Get all quality control records
+app.get('/quality-control', async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('languages')
-      .select()
-    res.json({
-      data
-    })
-    logger.info('Fetched all languages')
-    if (error) {
-      logger.error(error)
-      throw new Error(error)
-    }
+      .from('quality_control')
+      .select();
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
-    logger.error(error)
+    res.status(500).json({ error: error.message });
   }
-})
+});
 
-app.post('/languages', async function (req, res) {
-  const name = req.body.name
-  const description = req.body.description
-  const stars = req.body.stars
-
+// Add new quality control record
+app.post('/quality-control', async (req, res) => {
+  const { product, defects, status, date, comments } = req.body;
   try {
     const { data, error } = await supabase
-      .from('languages')
-      .insert({
-        name: name,
-        description: description,
-        stars: stars
-      })
-      .select()
-
-    if (error) {
-      logger.error(error)
-      res.status(500).send(error.message)
-    } else {
-      res.status(200).json(data)
-    }
-  } catch (err) {
-    logger.error(err)
-    res.status(500).send(err.message)
+      .from('quality_control')
+      .insert([{ product, defects, status, date, comments }])
+      .select();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-})
+});
 
-app.get('/languages/:name', async function (req, res) {
-  const name = req.params.name
-
+// Update a quality control record
+app.put('/quality-control/:id', async (req, res) => {
+  const id = req.params.id;
+  const { product, defects, status, date, comments } = req.body;
   try {
     const { data, error } = await supabase
-      .from('languages')
-      .select()
-      .ilike('name', name)
-    if (error) {
-      logger.error(error)
-      res.status(500).send(error.message)
-    } else {
-      res.status(200).json(data)
-    }
-  } catch (err) {
-    logger.error(err)
-    res.status(500).send(err.message)
-  }
-})
-
-app.put('/languages/:id', async function (req, res) {
-  const id = req.params.id
-  const name = req.body.name
-  const description = req.body.description
-  const stars = req.body.stars
-
-  try {
-    const { error } = await supabase
-      .from('languages')
-      .update({
-        name: name,
-        description: description,
-        stars: stars
-      })
+      .from('quality_control')
+      .update({ product, defects, status, date, comments })
       .eq('id', id)
-
-    if (error) {
-      logger.error(error)
-      res.status(500).send(error.message)
-    } else {
-      res.status(200).json({
-        message: `${id} updated successfully`
-      })
-    }
-  } catch (err) {
-    logger.error(err)
-    res.status(500).send(err.message)
+      .select();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-})
+});
 
-app.delete('/languages/:id', async function (req, res) {
-  const id = req.params.id
-
+// Delete a quality control record
+app.delete('/quality-control/:id', async (req, res) => {
+  const id = req.params.id;
   try {
-    const { error } = await supabase
-      .from('languages')
+    const { data, error } = await supabase
+      .from('quality_control')
       .delete()
-      .eq('id', id)
-
-    if (error) {
-      logger.error(error)
-      res.status(500).send(error.message)
-    } else {
-      res.status(200).json({
-        message: `${id} removed successfully`
-      })
-    }
-  } catch (err) {
-    logger.error(err)
-    res.status(500).send(err.message)
+      .eq('id', id);
+    if (error) throw error;
+    res.json({ message: `Record with id ${id} deleted` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-})
+});
 
-// Run server
+// Production Tracking Endpoints
+
+// Get all production records
+app.get('/production', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('production')
+      .select();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add new production record
+app.post('/production', async (req, res) => {
+  const { product, quantity, status, date } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('production')
+      .insert([{ product, quantity, status, date }])
+      .select();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update a production record
+app.put('/production/:id', async (req, res) => {
+  const id = req.params.id;
+  const { product, quantity, status, date } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('production')
+      .update({ product, quantity, status, date })
+      .eq('id', id)
+      .select();
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a production record
+app.delete('/production/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const { data, error } = await supabase
+      .from('production')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    res.json({ message: `Record with id ${id} deleted` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Start server
 app.listen(port, () => {
-  logger.info(`🚀 ExpressJS Supabase API Starter running on port ${port}`)
-  console.log(`🚀 ExpressJS Supabase API Starter running on port ${port}`)
-})
+  console.log(`🚀 Server running on port ${port}`);
+});

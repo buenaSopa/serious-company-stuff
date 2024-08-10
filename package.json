@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "jspdf": "^2.5.1"
-  }
+	"name": "project-root",
+	"version": "1.0.0",
+	"scripts": {
+		"start:client": "cd client && npm start",
+		"start:server": "cd server && npm start",
+		"start": "npm run start:client & npm run start:server"
+	}
 }
