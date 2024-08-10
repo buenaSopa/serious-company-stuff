@@ -1,8 +1,12 @@
 import express from 'express';
 import supabase from './supabase.js';
+import cors from 'cors'; // Import CORS middleware
 
 const app = express();
 const port = 3001;
+
+// Use CORS middleware
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
