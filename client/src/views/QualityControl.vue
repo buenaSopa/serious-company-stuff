@@ -75,7 +75,8 @@
 
     <!-- Generate Report Button -->
     <div class="mb-6">
-      <button @click="generateReport" class="btn-primary">Generate Report</button>
+      <button @click="generateReport" class="btn-primary mr-4">Generate Report</button>
+<button @click="downloadPDF" class="btn-secondary">Download PDF</button>
     </div>
 
     <!-- Chart for Report Visualization -->
@@ -96,6 +97,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { Chart, registerables } from 'chart.js';
+import jsPDF from 'jspdf';
 import EditQualityRecordModal from '@/components/EditQualityRecordModal.vue';
 
 Chart.register(...registerables);
@@ -195,6 +197,22 @@ function generateReport() {
       }
     }
   });
+}
+
+function downloadPDF() {
+  if (!reportChart) {
+    alert('Please generate the report first.');
+    return;
+  }
+
+  // Convert chart to image
+  const canvas = document.getElementById('reportChart');
+  const imgData = canvas.toDataURL('image/png');
+  
+  // Create PDF and add the chart image
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  pdf.addImage(imgData, 'PNG', 10, 10, 190, 100); // Adjust dimensions as needed
+  pdf.save('QualityControlReport.pdf');
 }
 
 onMounted(() => {
