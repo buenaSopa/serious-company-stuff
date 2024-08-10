@@ -96,17 +96,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import EditQualityRecordModal from '@/components/EditQualityRecordModal.vue';
 
 Chart.register(...registerables);
 
-const qualityControlRecords = ref([
-  { id: 1, product: 'Widget A', defects: 5, status: 'Pass', date: '2024-08-01', comments: 'Minor issues' },
-  { id: 2, product: 'Widget B', defects: 3, status: 'Fail', date: '2024-08-02', comments: 'Major defects' }
-]);
-
+const qualityControlRecords = ref([]);
 const newRecord = ref({
   product: '',
   defects: 0,
@@ -121,30 +118,46 @@ const searchQuery = ref('');
 
 let reportChart = null; // Track the current chart instance
 
-function addQualityControlRecord() {
-  const id = qualityControlRecords.value.length + 1;
-  qualityControlRecords.value.push({ ...newRecord.value, id });
-  newRecord.value = { product: '', defects: 0, status: 'Pass', date: '', comments: '' };
-}
+const apiUrl = '/api/quality-control';
 
-function openEditModal(record) {
-  currentRecord.value = { ...record };
-  isModalOpen.value = true;
-}
-
-function closeEditModal() {
-  isModalOpen.value = false;
-}
-
-function updateRecord(updatedRecord) {
-  const index = qualityControlRecords.value.findIndex(record => record.id === updatedRecord.id);
-  if (index !== -1) {
-    qualityControlRecords.value[index] = updatedRecord;
+async function fetchRecords() {
+  try {
+    const response = await axios.get(apiUrl);
+    qualityControlRecords.value = response.data;
+  } catch (error) {
+    console.error('Error fetching records:', error);
   }
 }
 
-function deleteRecord(id) {
-  qualityControlRecords.value = qualityControlRecords.value.filter(record => record.id !== id);
+async function addQualityControlRecord() {
+  try {
+    const response = await axios.post(apiUrl, newRecord.value);
+    qualityControlRecords.value.push(response.data[0]);
+    newRecord.value = { product: '', defects: 0, status: 'Pass', date: '', comments: '' };
+  } catch (error) {
+    console.error('Error adding record:', error);
+  }
+}
+
+async function updateRecord(updatedRecord) {
+  try {
+    await axios.put(`${apiUrl}/${updatedRecord.id}`, updatedRecord);
+    const index = qualityControlRecords.value.findIndex(record => record.id === updatedRecord.id);
+    if (index !== -1) {
+      qualityControlRecords.value[index] = updatedRecord;
+    }
+  } catch (error) {
+    console.error('Error updating record:', error);
+  }
+}
+
+async function deleteRecord(id) {
+  try {
+    await axios.delete(`${apiUrl}/${id}`);
+    qualityControlRecords.value = qualityControlRecords.value.filter(record => record.id !== id);
+  } catch (error) {
+    console.error('Error deleting record:', error);
+  }
 }
 
 function handleFileUpload(event) {
@@ -216,7 +229,7 @@ function downloadPDF() {
 }
 
 onMounted(() => {
-  // Optionally, initialize the chart or perform other setup tasks
+  fetchRecords(); // Fetch records when component mounts
 });
 </script>
 
