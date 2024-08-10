@@ -1,7 +1,3 @@
-Got it! Here’s an updated `README.md` that reflects the ability to run the server and client with a single command:
-
----
-
 # Quality Control and Production Tracking Application
 
 This project provides a web application for tracking production and quality control records. It uses a Node.js backend with Express and a Vue.js frontend. The application integrates with Supabase for data storage and includes features for managing records and generating reports.
@@ -118,11 +114,14 @@ This command runs both the client and server:
 
 - **File Upload (To Be Implemented):**
   - Currently, file upload functionality for attachments is a placeholder. Consider integrating file storage with Supabase Storage or another service.
+ 
+## Screenshot
+![image](https://github.com/user-attachments/assets/3c40d4ff-4d93-4830-8488-4ffd64d87196)
 
-## License
+![image](https://github.com/user-attachments/assets/358608fd-cd03-4ade-af40-f165f829ac28)
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+![image](https://github.com/user-attachments/assets/1df1ba65-082d-4a25-8eb4-e3c76d43e927)
 
----
+![image](https://github.com/user-attachments/assets/06fcd725-f2ac-4ad5-bbc1-3922683a9b76)
 
-Feel free to customize this further based on your project's specific needs and details.
+![image](https://github.com/user-attachments/assets/96705783-6a29-426b-88ee-ece50aa319bd)
