@@ -72,6 +72,17 @@
       </table>
     </div>
 
+
+    <!-- Generate Report Button -->
+    <div class="mb-6">
+      <button @click="generateReport" class="btn-primary">Generate Report</button>
+    </div>
+
+    <!-- Chart for Report Visualization -->
+    <div class="mb-6">
+      <canvas id="reportChart" width="400" height="200"></canvas>
+    </div>
+
     <!-- Edit Record Modal -->
     <EditQualityRecordModal
       :record="currentRecord"
@@ -83,8 +94,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { Chart, registerables } from 'chart.js';
 import EditQualityRecordModal from '@/components/EditQualityRecordModal.vue';
+
+Chart.register(...registerables);
 
 const qualityControlRecords = ref([
   { id: 1, product: 'Widget A', defects: 5, status: 'Pass', date: '2024-08-01', comments: 'Minor issues' },
@@ -102,6 +116,8 @@ const newRecord = ref({
 const isModalOpen = ref(false);
 const currentRecord = ref({});
 const searchQuery = ref('');
+
+let reportChart = null; // Track the current chart instance
 
 function addQualityControlRecord() {
   const id = qualityControlRecords.value.length + 1;
@@ -140,7 +156,52 @@ const filteredRecords = computed(() => {
     record.comments.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
+
+// Generate a report with Chart.js
+function generateReport() {
+  const ctx = document.getElementById('reportChart').getContext('2d');
+  
+  // Destroy existing chart if it exists
+  if (reportChart) {
+    reportChart.destroy();
+  }
+
+  // Create a new chart
+  reportChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: qualityControlRecords.value.map(record => record.product),
+      datasets: [{
+        label: 'Defects Count',
+        data: qualityControlRecords.value.map(record => record.defects),
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.label}: ${context.raw} defects`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+onMounted(() => {
+  // Optionally, initialize the chart or perform other setup tasks
+});
 </script>
+
 <style scoped>
 .form-input {
   width: 100%;
